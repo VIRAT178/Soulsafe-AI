@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: radial-gradient(circle at 50% 0%, rgba(93,90,254,0.35) 0%, rgba(13,15,24,0.25) 40%, rgba(13,15,24,1) 70%), #0d0f18;
+  color: #f5f4ff;
+}
+
+@layer base {
+  h1 { @apply font-heading font-semibold tracking-tight text-4xl sm:text-5xl; }
+  h2 { @apply font-heading font-semibold tracking-tight text-3xl; }
+  h3 { @apply font-heading font-semibold tracking-tight text-2xl; }
+  h4 { @apply font-heading font-semibold tracking-tight text-xl; }
+  h5 { @apply font-heading font-medium tracking-tight text-lg; }
+  h6 { @apply font-heading font-medium tracking-tight text-base; }
+  p { @apply leading-relaxed; }
+  small { @apply text-xs leading-snug; }
+}
+
+@layer components {
+  .card-modern {
+    @apply bg-surface-800/90 backdrop-blur-sm rounded-xl2 p-6 border border-surface-700/40 shadow-card hover:shadow-glow-sm transition-all duration-300 relative overflow-hidden;
+  }
+  .card-modern::before {
+    content: "";
+    @apply absolute inset-0 rounded-xl2 bg-gradient-to-br from-brand-500/0 via-brand-500/5 to-brand-500/10 opacity-0 transition-opacity duration-300 pointer-events-none;
+  }
+  .card-modern:hover::before { opacity: 1; }
+  .glass-card { @apply bg-surface-800/60 backdrop-blur-md border border-surface-700/30 rounded-xl2 shadow-inner; }
+  .hero-gradient { @apply bg-gradient-hero; }
+  .section-heading { @apply font-heading text-3xl font-semibold tracking-tight text-white; }
+  .heading-xl { @apply font-heading text-5xl font-semibold tracking-tight; }
+  .heading-lg { @apply font-heading text-4xl font-semibold tracking-tight; }
+  .heading-md { @apply font-heading text-2xl font-semibold tracking-tight; }
+  .heading-sm { @apply font-heading text-xl font-semibold tracking-tight; }
+  .eyebrow { @apply uppercase text-xs font-semibold tracking-wider text-brand-400; }
+  
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold py-3 px-6 rounded-xl2 transition-all duration-300 shadow-glow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface-900;
+  }
+  .btn-primary::after {
+    content: "";
+    @apply absolute inset-0 rounded-xl2 ring-1 ring-white/10 pointer-events-none;
+  }
+  .btn-secondary {
+    @apply bg-surface-800 hover:bg-surface-700 text-white font-semibold py-3 px-6 rounded-xl2 border border-surface-600/60 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40;
+  }
+  .btn-tertiary { @apply bg-gradient-to-r from-surface-700 to-surface-800 hover:from-surface-600 hover:to-surface-700 text-brand-300 font-medium py-2 px-4 rounded-xl2 border border-surface-600/40 transition-all duration-300; }
+  
+  .input-modern {
+    @apply bg-surface-800/80 border border-surface-700 text-white rounded-xl2 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all duration-300 placeholder:text-surface-400;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 to-brand-600 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(93,90,254,0.35)];
+  }
+  .pill { @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-700/80 border border-surface-600/50 text-xs text-surface-200; }
+  .divider { @apply h-px w-full bg-gradient-to-r from-transparent via-surface-700 to-transparent my-8; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141624;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2c3043;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f445c;
+}

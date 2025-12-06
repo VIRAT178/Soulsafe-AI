@@ -1,0 +1,93 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+!.env.example
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Build outputs
+Frontend/dist/
+Frontend/build/
+Backend/Backend(Node)/node_modules/
+AI-Python/venv/
+Backend/Backend(Java)/target/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database
+*.sqlite
+*.sqlite3
+mongodb_data/
+redis_data/
+
+# Uploads
+uploads/
+temp/
+
+# Java specific
+*.class
+*.jar
+*.war
+*.ear
+target/
+.gradle/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Docker volumes
+mongodb_data/
+redis_data/
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.backup
+*.bak
+backup/
+
+# Temporary files
+tmp/
+temp/

@@ -1,0 +1,21 @@
+# Core Flask dependencies
+flask==2.3.3
+flask-cors==4.0.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+
+# AI/ML Core (only essential ones)
+transformers==4.33.2
+numpy==1.24.3
+scikit-learn==1.3.0
+
+# NLP
+nltk==3.8.1
+vaderSentiment==3.3.2
+
+# Optional heavy dependencies (install only if needed)
+# tensorflow==2.13.0  # Only if using TensorFlow models
+# torch==2.0.1  # Only if using PyTorch models
+# opencv-python==4.8.0.76  # Only for image/video processing
+# librosa==0.10.1  # Only for audio processing
+# face-recognition==1.3.0  # Only for face detection features
