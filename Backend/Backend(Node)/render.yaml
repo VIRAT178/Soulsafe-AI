@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: soulsafe-backend
+    env: node
+    plan: standard
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: soulsafe
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: MAILTRAP_HOST
+        value: smtp.gmail.com
+      - key: MAILTRAP_PORT
+        value: 587
+      - key: MAILTRAP_USER
+        sync: false
+      - key: MAILTRAP_PASS
+        sync: false
+      - key: PYTHON_SERVICE_URL
+        value: http://localhost:5001
+      - key: FRONTEND_URL
+        value: https://soulsafe-ai.vercel.app
+      - key: LOG_LEVEL
+        value: info
+
+databases:
+  - name: soulsafe
+    plan: starter
