@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: soulsafe-ai-python
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: FLASK_ENV
+        value: production

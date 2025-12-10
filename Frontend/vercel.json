@@ -1,14 +1,27 @@
 {
+  "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "env": {
-    "VITE_API_URL": "@vite_api_url",
-    "VITE_AI_SERVICE_URL": "@vite_ai_service_url"
+    "VITE_API_URL": "https://soulsafe-backend.onrender.com/api"
   }
 }
