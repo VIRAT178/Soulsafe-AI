@@ -54,10 +54,12 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS configuration - Production safe
+const normalizeOrigin = (origin) => origin?.replace(/\/$/, '');
+
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || '')
       .split(',')
-      .map(o => o.trim())
+      .map(o => normalizeOrigin(o.trim()))
       .filter(Boolean)
   : [
       'http://localhost:3000',
@@ -68,8 +70,11 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
     ];
 
 // In production, if FRONTEND_URL is set but not in allowedOrigins, add it
-if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL) {
+  const norm = normalizeOrigin(process.env.FRONTEND_URL);
+  if (norm && !allowedOrigins.includes(norm)) {
+    allowedOrigins.push(norm);
+  }
 }
 
 console.log('CORS Allowed Origins:', allowedOrigins.length ? allowedOrigins : 'ALL (no restrictions)');
@@ -82,13 +87,15 @@ app.use(cors({
     // Allow all origins in non-production
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
 
+    const normalizedOrigin = normalizeOrigin(origin);
+
     // If no origins configured in production, allow all to avoid accidental lockout
     if (!allowedOrigins.length) {
       console.log('⚠️  No ALLOWED_ORIGINS set - allowing all origins (set FRONTEND_URL or ALLOWED_ORIGINS in production)');
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(normalizedOrigin)) {
       return callback(null, true);
     }
     
