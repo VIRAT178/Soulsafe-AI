@@ -24,10 +24,16 @@ const { startScheduler } = require('./services/capsuleScheduler');
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 
-console.log(`🔧 Configuration loaded:`);
+console.log('\n🔧 ========================================');
+console.log('   CONFIGURATION CHECK');
+console.log('========================================');
 console.log(`   PORT: ${PORT}`);
 console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-console.log(`   MongoDB: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
+console.log(`   MongoDB: ${process.env.MONGODB_URI ? '✅ Configured' : '❌ NOT SET'}`);
+console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Configured' : '❌ NOT SET'}`);
+console.log(`   ENCRYPTION_KEY: ${process.env.ENCRYPTION_KEY ? '✅ Configured' : '❌ NOT SET'}`);
+console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || '❌ NOT SET'}`);
+console.log('========================================\n');
 
 // Trust proxy - Required for Railway, Render, Heroku, etc. (behind reverse proxy)
 // This allows Express to correctly read X-Forwarded-* headers
