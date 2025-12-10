@@ -22,7 +22,12 @@ const analyticsRoutes = require('./routes/analytics');
 const { startScheduler } = require('./services/capsuleScheduler');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+
+console.log(`🔧 Configuration loaded:`);
+console.log(`   PORT: ${PORT}`);
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+console.log(`   MongoDB: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
 
 // Trust proxy - Required for Railway, Render, Heroku, etc. (behind reverse proxy)
 // This allows Express to correctly read X-Forwarded-* headers
@@ -214,21 +219,58 @@ server.on('error', (error) => {
 });
 
 // Graceful shutdown to avoid dropping in-flight requests
+let isShuttingDown = false;
+
 const shutdown = async (signal) => {
+  if (isShuttingDown) {
+    console.log('Shutdown already in progress...');
+    return;
+  }
+  
+  isShuttingDown = true;
   console.log(`\n${signal} received, shutting down gracefully...`);
+  
   server.close(() => {
     console.log('HTTP server closed');
   });
+  
   try {
     await mongoose.connection.close(false);
     console.log('MongoDB connection closed');
   } catch (err) {
     console.error('Error closing MongoDB connection', err);
   }
+  
   process.exit(0);
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+// Only handle SIGINT (Ctrl+C) for local development
+// Railway/Render will handle SIGTERM on their own
+if (process.env.NODE_ENV !== 'production') {
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+} else {
+  // In production, just log SIGTERM but let platform handle it
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received - platform will handle shutdown');
+    shutdown('SIGTERM');
+  });
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+// Keep process alive
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
 
 module.exports = app;
