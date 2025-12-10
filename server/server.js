@@ -22,7 +22,7 @@ const analyticsRoutes = require('./routes/analytics');
 const { startScheduler } = require('./services/capsuleScheduler');
 
 const app = express();
-const PORT = parseInt(process.env.PORT, 10) || 5000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 
 console.log('\n🔧 ========================================');
 console.log('   CONFIGURATION CHECK');
@@ -172,6 +172,11 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/milestones', milestoneRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
+// Simple root health check (no dependencies)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', service: 'soulsafe-backend' });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -217,15 +222,18 @@ app.use('*', (req, res) => {
 
 // Start server - bind to 0.0.0.0 for Railway/Docker compatibility
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log('🚀 ========================================');
+  console.log('\n🚀 ========================================');
   console.log(`✅ SoulSafe AI Backend running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📡 Server listening on 0.0.0.0:${PORT}`);
-  console.log('🚀 ========================================');
+  console.log('🚀 ========================================\n');
   
   // Start capsule reminder scheduler (checks every hour for capsules unlocking in 24 hours)
   startScheduler();
 });
+
+// Set server timeout to prevent Railway from killing the process
+server.setTimeout(65000); // 65 seconds - longer than Railway's typical health check timeout
 
 // Handle server errors
 server.on('error', (error) => {
