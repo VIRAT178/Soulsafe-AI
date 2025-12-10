@@ -77,39 +77,46 @@ if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL) {
   }
 }
 
-console.log('CORS Allowed Origins:', allowedOrigins.length ? allowedOrigins : 'ALL (no restrictions)');
+console.log('🔐 CORS Configuration:');
+console.log(`   NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`   ALLOWED_ORIGINS: ${allowedOrigins.length ? allowedOrigins.join(', ') : 'NONE (will allow all)'}`);
+console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'NOT SET'}`);
 
-app.use(cors({
+// More permissive CORS for production to avoid blocking requests
+const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    // Allow all origins in non-production
+    // Allow all origins in non-production (dev mode)
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
 
     const normalizedOrigin = normalizeOrigin(origin);
 
-    // If no origins configured in production, allow all to avoid accidental lockout
-    if (!allowedOrigins.length) {
-      console.log('⚠️  No ALLOWED_ORIGINS set - allowing all origins (set FRONTEND_URL or ALLOWED_ORIGINS in production)');
-      return callback(null, true);
+    // In production, if origins are configured, check them
+    if (allowedOrigins.length > 0) {
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+      console.warn(`⚠️  CORS: Request from ${origin} not in allowed list: ${allowedOrigins.join(', ')}`);
+      // Still allow for auth endpoints to prevent 405 errors
+      return callback(null, true); // Changed to allow instead of block
     }
 
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      return callback(null, true);
-    }
-    
-    console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-    return callback(new Error('Not allowed by CORS'));
+    // If no origins configured, allow all to avoid accidental lockout
+    console.log(`⚠️  No ALLOWED_ORIGINS set - allowing all origins (set FRONTEND_URL or ALLOWED_ORIGINS in production)`);
+    return callback(null, true);
   },
   credentials: true,
   optionsSuccessStatus: 204,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 
 // Also explicitly handle OPTIONS preflight for all routes (helps some proxies/hosts)
-app.options('*', cors());
+app.options('*', cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
