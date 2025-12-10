@@ -34,6 +34,12 @@ const createTransporter = () => {
  */
 const sendWelcomeEmail = async (user) => {
   try {
+    // Skip email if SMTP not configured
+    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      console.log('⚠️  Email not configured - skipping welcome email for:', user.email);
+      return { success: false, skipped: true, reason: 'SMTP not configured' };
+    }
+
     const transporter = createTransporter();
     
     const { email, firstName, lastName } = user;
@@ -68,7 +74,8 @@ const sendWelcomeEmail = async (user) => {
       user: process.env.MAILTRAP_USER,
       hasPass: !!process.env.MAILTRAP_PASS
     });
-    throw error;
+    // Don't throw - let app continue without email
+    return { success: false, error: error.message };
   }
 };
 
@@ -353,6 +360,11 @@ Support: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/support
  */
 const sendOTPEmail = async (user) => {
   try {
+    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      console.log('⚠️  Email not configured - skipping OTP email for:', user.email);
+      return { success: false, skipped: true, reason: 'SMTP not configured' };
+    }
+
     const transporter = createTransporter();
     
     const { email, firstName, otp } = user;
@@ -380,7 +392,7 @@ const sendOTPEmail = async (user) => {
     };
   } catch (error) {
     console.error('❌ Error sending OTP email:', error.message);
-    throw error;
+    return { success: false, error: error.message };
   }
 };
 
@@ -622,6 +634,11 @@ Support: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/support
  */
 const sendPasswordResetSuccessEmail = async (user) => {
   try {
+    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      console.log('⚠️  Email not configured - skipping password reset success email for:', user.email);
+      return { success: false, skipped: true, reason: 'SMTP not configured' };
+    }
+
     const transporter = createTransporter();
     
     const { email, firstName } = user;
@@ -649,7 +666,7 @@ const sendPasswordResetSuccessEmail = async (user) => {
     };
   } catch (error) {
     console.error('❌ Error sending password reset success email:', error.message);
-    throw error;
+    return { success: false, error: error.message };
   }
 };
 
@@ -1014,6 +1031,11 @@ Support: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/support
  */
 const sendProfileUpdateSuccessEmail = async (user, changedFields = []) => {
   try {
+    if (!process.env.MAILTRAP_USER || !process.env.MAILTRAP_PASS) {
+      console.log('⚠️  Email not configured - skipping profile update email');
+      return { success: false, skipped: true, reason: 'SMTP not configured' };
+    }
+
     const transporter = createTransporter();
     const { email, firstName } = user;
 
@@ -1033,7 +1055,7 @@ const sendProfileUpdateSuccessEmail = async (user, changedFields = []) => {
     return { success: true, messageId: info.messageId, recipient: email };
   } catch (error) {
     console.error('❌ Error sending profile update email:', error.message);
-    throw error;
+    return { success: false, error: error.message };
   }
 };
 
