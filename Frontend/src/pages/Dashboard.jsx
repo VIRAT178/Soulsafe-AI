@@ -38,7 +38,9 @@ const Dashboard = () => {
       try {
         // Fetch capsules for stats and activity
         const { data } = await import('../services/api.jsx').then(m => m.capsuleAPI.getAll());
+        console.log('Dashboard: Fetched capsules data:', data);
         const capsules = data.capsules || [];
+        console.log('Dashboard: Capsules array:', capsules);
         setStats([
           {
             title: 'Time Capsules',
@@ -73,15 +75,17 @@ const Dashboard = () => {
             link: '/milestones'
           }
         ]);
-        setRecentActivity(capsules.slice(0, 3).map((c, idx) => ({
+        const activityData = capsules.slice(0, 3).map((c, idx) => ({
           id: c._id || idx,
           type: c.status,
-          title: c.title,
-          description: c.description,
-          time: c.createdAt ? new Date(c.createdAt).toLocaleString() : '',
+          title: c.title || 'Untitled Capsule',
+          description: c.description || 'No description',
+          time: c.createdAt ? new Date(c.createdAt).toLocaleString() : 'Recently created',
           icon: Archive,
           color: 'text-brand-400'
-        })));
+        }));
+        console.log('Dashboard: Recent activity:', activityData);
+        setRecentActivity(activityData);
 
         // Fetch AI insights preview (summary, emotions, suggestions, etc)
         setAiLoading(true);
@@ -200,7 +204,18 @@ const Dashboard = () => {
             <div className="card-modern overflow-hidden p-0">
               <div className="p-4 sm:p-6">
                 <div className="space-y-3">
-                  {recentActivity.map((activity) => (
+                  {recentActivity.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Archive className="w-12 h-12 text-surface-600 mx-auto mb-3" />
+                      <p className="text-surface-400 text-sm">No capsules yet</p>
+                      <button
+                        onClick={() => navigate('/capsules/create')}
+                        className="mt-4 text-brand-400 hover:text-brand-300 text-sm font-medium transition-colors"
+                      >
+                        Create your first capsule →
+                      </button>
+                    </div>
+                  ) : recentActivity.map((activity) => (
                     <button
                       key={activity.id}
                       onClick={() => navigate(`/capsules/${activity.id}`)}
