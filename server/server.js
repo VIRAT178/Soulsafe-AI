@@ -53,7 +53,7 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// CORS configuration - Production safe
+// CORS configuration - Production safe (updated for Railway deployment)
 const normalizeOrigin = (origin) => origin?.replace(/\/$/, '');
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
