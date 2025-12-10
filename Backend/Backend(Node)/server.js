@@ -38,7 +38,7 @@ app.use('/api/', limiter);
 
 // CORS configuration - Production safe
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? (process.env.ALLOWED_ORIGINS || '')
+  ? (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || '')
       .split(',')
       .map(o => o.trim())
       .filter(Boolean)
@@ -50,6 +50,13 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       'http://127.0.0.1:5174'
     ];
 
+// In production, if FRONTEND_URL is set but not in allowedOrigins, add it
+if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+console.log('CORS Allowed Origins:', allowedOrigins.length ? allowedOrigins : 'ALL (no restrictions)');
+
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -59,11 +66,16 @@ app.use(cors({
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
 
     // If no origins configured in production, allow all to avoid accidental lockout
-    if (!allowedOrigins.length) return callback(null, true);
+    if (!allowedOrigins.length) {
+      console.log('⚠️  No ALLOWED_ORIGINS set - allowing all origins (set FRONTEND_URL or ALLOWED_ORIGINS in production)');
+      return callback(null, true);
+    }
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    
+    console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -157,10 +169,11 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Start server
-const server = app.listen(PORT, () => {
+// Start server - bind to 0.0.0.0 for Railway/Docker compatibility
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`SoulSafe AI Backend running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Server listening on 0.0.0.0:${PORT}`);
   
   // Start capsule reminder scheduler (checks every hour for capsules unlocking in 24 hours)
   startScheduler();
