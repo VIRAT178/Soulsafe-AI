@@ -105,23 +105,38 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection with retry and fallback
 const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/soulsafe', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
-    console.log('MongoDB connected successfully');
-    console.log('Using database:', mongoose.connection.name);
-  } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    console.warn('⚠️  Running without database connection. Some features will be limited.');
-    console.warn('To fix: Check your MONGODB_URI or start local MongoDB.');
+  const maxRetries = 3;
+  let retries = 0;
+  
+  while (retries < maxRetries) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/soulsafe', {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+      });
+      console.log('✅ MongoDB connected successfully');
+      console.log('📦 Using database:', mongoose.connection.name);
+      return;
+    } catch (err) {
+      retries++;
+      console.error(`MongoDB connection attempt ${retries}/${maxRetries} failed:`, err.message);
+      
+      if (retries < maxRetries) {
+        console.log(`⏳ Retrying in 3 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      } else {
+        console.error('❌ MongoDB connection failed after all retries');
+        console.warn('⚠️  Running without database connection. Some features will be limited.');
+        console.warn('💡 To fix: Check your MONGODB_URI environment variable');
+      }
+    }
   }
 };
 
-connectDB();
+// Connect to DB (non-blocking, server starts anyway)
+connectDB().catch(err => {
+  console.error('Database connection initialization error:', err.message);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -177,12 +192,25 @@ app.use('*', (req, res) => {
 
 // Start server - bind to 0.0.0.0 for Railway/Docker compatibility
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`SoulSafe AI Backend running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Server listening on 0.0.0.0:${PORT}`);
+  console.log('🚀 ========================================');
+  console.log(`✅ SoulSafe AI Backend running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📡 Server listening on 0.0.0.0:${PORT}`);
+  console.log('🚀 ========================================');
   
   // Start capsule reminder scheduler (checks every hour for capsules unlocking in 24 hours)
   startScheduler();
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use`);
+    process.exit(1);
+  } else {
+    console.error('❌ Server error:', error);
+    throw error;
+  }
 });
 
 // Graceful shutdown to avoid dropping in-flight requests
